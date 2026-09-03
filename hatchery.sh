@@ -5,7 +5,7 @@
 #   Waves:  WAVE_SIZE=3 (default) boxes boot per wave to avoid cold-boot storms
 set -euo pipefail
 
-HATCH_COUNT="${HATCH_COUNT:-1}"
+HATCH_COUNT="${HATCH_COUNT:-6}"
 WAVE_SIZE="${WAVE_SIZE:-3}"
 WAVE_SETTLE="${WAVE_SETTLE:-45}"   # seconds to let each wave boot + pair
 IMAGE="hatchery:1"
