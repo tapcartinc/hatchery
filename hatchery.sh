@@ -15,10 +15,11 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 DOCKER="$HOME/.docker/bin/docker"
 COMPOSE_FILE="$DIR/docker-compose.yml"
 
-# join codes are minted via the openclaw CLI. On a machine that is not the
-# gateway (e.g. a worker Mac mini), pre-mint codes from the gateway and write
-# them to .env as HATCH<n>_JOIN_URL before running up (skip minting with
-# SKIP_MINT=1 ./hatchery.sh up).
+# v2: gateway-driven pairing is the default. 'up' boots blank boxes; the fleet
+# manager then pairs each box directly:
+#   docker exec hatch-N hatch-pair "<join-url>"
+# Standalone mode (this host IS the gateway): MINT=1 ./hatchery.sh up mints
+# codes locally and injects them via env at boot.
 
 gen_compose() {
   {
@@ -74,7 +75,7 @@ case "${1:-}" in
       wave=()
       for j in $(seq "$i" $(( i + WAVE_SIZE - 1 ))); do
         [ "$j" -le "$HATCH_COUNT" ] || break
-        if [ "${SKIP_MINT:-0}" != "1" ]; then
+        if [ "${MINT:-0}" = "1" ]; then
           url=$(mint_code)
           # replace or append this box's env line
           grep -v "^HATCH${j}_JOIN_URL=" "$DIR/.env" > "$DIR/.env.tmp" 2>/dev/null || true

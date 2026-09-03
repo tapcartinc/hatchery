@@ -13,4 +13,5 @@ RUN npm install -g @tapcart/tapcart-cli openclaw@2026.8.1
 
 RUN mkdir -p /custom-services.d
 COPY openclaw-node.sh /custom-services.d/openclaw-node
-RUN chmod +x /custom-services.d/openclaw-node
+COPY hatch-pair.sh /usr/local/bin/hatch-pair
+RUN chmod +x /custom-services.d/openclaw-node /usr/local/bin/hatch-pair
