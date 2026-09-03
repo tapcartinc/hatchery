@@ -11,6 +11,7 @@ if [ ! -f /config/.openclaw-initialized ]; then
     exec sleep infinity
   fi
   s6-setuidgid abc env HOME=/config openclaw config set nodeHost.workerRuns.enabled true --strict-json || true
+  s6-setuidgid abc env HOME=/config openclaw config set nodeHost.workerRuns.capacity 1 --strict-json || true
   touch /config/.openclaw-initialized
   chown abc:abc /config/.openclaw-initialized
   echo "[hatchery] first boot: pairing as ${OPENCLAW_NODE_NAME:-unnamed}..."
