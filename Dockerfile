@@ -9,7 +9,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
   && apt-get install -y nodejs \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g @tapcart/tapcart-cli openclaw@2026.8.1
+RUN npm install -g @tapcart/tapcart-cli openclaw@2026.9.1
 
 RUN mkdir -p /custom-services.d
 COPY openclaw-node.sh /custom-services.d/openclaw-node
