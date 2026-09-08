@@ -5,12 +5,12 @@
 #   Waves:  WAVE_SIZE=3 (default) boxes boot per wave to avoid cold-boot storms
 set -euo pipefail
 
-HATCH_COUNT="${HATCH_COUNT:-6}"
+HATCH_COUNT="${HATCH_COUNT:-5}"
 WAVE_SIZE="${WAVE_SIZE:-3}"
 WAVE_SETTLE="${WAVE_SETTLE:-45}"   # seconds to let each wave boot + pair
 IMAGE="hatchery:1"
 BASE_PORT=3002
-MEM_LIMIT="2500m"
+MEM_LIMIT="4g"
 DIR="$(cd "$(dirname "$0")" && pwd)"
 DOCKER="$HOME/.docker/bin/docker"
 COMPOSE_FILE="$DIR/docker-compose.yml"
