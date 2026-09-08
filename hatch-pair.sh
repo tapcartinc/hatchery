@@ -1,14 +1,31 @@
 #!/bin/bash
 # hatch-pair — (re)pair this box to a gateway on demand.
 # Usage: docker exec hatch-N hatch-pair "<join-url>"
-# Resets pairing state and hands the new code to the node service; s6 restarts
-# the service, which consumes the code. Gateway verifies via 'openclaw nodes list'.
+# Wipes pairing state, stages the new code, and stops the running node process
+# so s6 relaunches the service and consumes it. Verify with 'openclaw nodes list'.
 set -euo pipefail
-URL="${1:?usage: hatch-pair <join-url>}"
+# Accept the join URL on stdin (`hatch-pair -`) so it never appears in argv,
+# process lists, or shell history. Argv form kept only for manual use.
+if [ "${1:-}" = "-" ] || [ $# -eq 0 ]; then
+  IFS= read -r URL || true
+  URL="${URL%%[[:space:]]*}"
+else
+  URL="$1"
+fi
+[ -n "${URL:-}" ] || { echo "usage: hatch-pair - < file-with-join-url" >&2; exit 2; }
+
+# Drop every trace of the previous pairing, or the service takes the
+# "already paired" branch and ignores this code.
 rm -f /config/.openclaw-initialized
+rm -rf /config/.openclaw/node-host
+
 printf '%s' "$URL" > /config/.openclaw-join-url
 chown abc:abc /config/.openclaw-join-url
-# nudge the service: kill any running node/connect process so s6 relaunches with fresh state
-pkill -f 'openclaw node run' 2>/dev/null || true
-pkill -f 'openclaw connect' 2>/dev/null || true
+
+# Stop the running node process. The binaries are named `openclaw` and
+# `openclaw-node` — matching on "openclaw node run" never worked and left the
+# old process alive, which is what made re-pairing impossible.
+pkill -f 'openclaw-node' 2>/dev/null || true
+pkill -x 'openclaw' 2>/dev/null || true
+
 echo "[hatch-pair] join code staged; node service will pair momentarily."
