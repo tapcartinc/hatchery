@@ -10,7 +10,7 @@
 # connect attempt. A failed pair now falls back to waiting for a fresh code
 # instead of looping `node run` against a nonexistent local gateway.
 export HOME=/config
-mkdir -p /config/.npm
+mkdir -p /config/.npm /config/work /config/out
 chown -R abc:abc /config 2>/dev/null
 
 # Shared core repo (skills + scripts the workers run). Boxes are ephemeral, so
