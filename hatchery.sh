@@ -42,9 +42,28 @@ gen_compose() {
       - OPENCLAW_JOIN_URL=\${HATCH${i}_JOIN_URL:-}
       - OPENCLAW_NODE_NAME=hatch-$i
     restart: on-failure:3
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
 EOF
     done
   } > "$COMPOSE_FILE"
+}
+
+prune_docker() {
+  # Disk hygiene. Every image rebuild orphans the previous hatchery:1 (~9GB) and
+  # leaves build cache behind; unbounded json-file logs added more. Docker filled
+  # the host disk to 100% on 2026-09-22 and crashed. Dangling images + old build
+  # cache go; tagged images (hatchery:1, hatchery-desktop:1) and non-hatch-N
+  # containers (hatch-test) are never touched.
+  echo "--- docker disk before prune:"; "$DOCKER" system df 2>/dev/null || true
+  "$DOCKER" image prune -f >/dev/null 2>&1 || true
+  "$DOCKER" builder prune -f --keep-storage 10GB >/dev/null 2>&1 || true
+  "$DOCKER" volume prune -f >/dev/null 2>&1 || true
+  echo "--- docker disk after prune:"; "$DOCKER" system df 2>/dev/null || true
+  echo "--- host disk:"; df -h / | tail -1
 }
 
 mint_code() {
@@ -98,6 +117,7 @@ case "${1:-}" in
   down)
     "$DOCKER" compose -f "$COMPOSE_FILE" down 2>/dev/null || true
     clean_nodes
+    prune_docker
     echo "hatchery destroyed + node entries cleaned (wipe complete)"
     ;;
   refresh)
